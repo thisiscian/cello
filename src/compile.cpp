@@ -1,6 +1,8 @@
 #include<cello/compile.h>
 
 void writeTestGif() {
-	output=EGifOpen("test.gif", 
-	EGifSpew(output);
+	static ColorMapObject* palette;
+	GifFileType *output = EGifOpen("test.gif", FALSE);
+//	if(!output) { QUIT THIS BITCH }
+
 }

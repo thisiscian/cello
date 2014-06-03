@@ -17,4 +17,5 @@ add_executable(
 	src/main.cpp
 	src/settings.cpp
 	src/compile.cpp
+	src/frame.cpp
 )
