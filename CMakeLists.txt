@@ -16,6 +16,6 @@ add_executable(
 	${PROJECT_NAME}
 	src/main.cpp
 	src/settings.cpp
-	src/compile.cpp
 	src/frame.cpp
+	src/compile.cpp
 )
