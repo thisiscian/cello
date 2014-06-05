@@ -1,4 +1,5 @@
-#include <cello/settings.h>
+#include<cello/settings.h>
+#include<cello/frame.h>
 using namespace std;
 using namespace boost::program_options;
 
@@ -37,3 +38,20 @@ Settings::Settings(int ac, char* av[]) {
 		addToInputFiles(vm["input"].as< vector<string> >());
 	}
 }
+
+namespace cello {
+	float frameSep=0.1;
+	int width=100;
+	int height=100;
+	int period=100;
+	int currentFrame=0;
+	int maxPaletteSize=256;
+	bool checkFileExists=false;
+	bool infiniteLoop=true;
+	std::string fileName="output.gif";
+}
+
+void cello::size(int squareWidth) { width=squareWidth; height=squareWidth; }
+void cello::size(int w, int h) { width=w; height=h; }
+
+

@@ -1,5 +1,5 @@
-#ifndef __cello_gifs__
-#define __cello_gifs__
+#ifndef __cello_versions__
+#define __cello_versions__
 	#define VERSION_MAJOR @VERSION_MAJOR@
 	#define VERSION_MINOR @VERSION_MINOR@
 	#define TITLE "@TITLE@"

@@ -1,6 +1,5 @@
 #include<cello/compile.h>
 #include<iostream>
-#include<fstream>
 using std::cout;
 using std::endl;
 
@@ -22,7 +21,7 @@ void writeTestGif() {
 //	ExtensionBlock stop={3,repeatBlock, APPLICATION_EXT_FUNC_CODE};
 //	ExtensionBlock list[3]={start,mid,stop};
 
-	ColorMapObject* palette=GifMakeMapObject(cello::maxPaletteSize, cello::defaultPalette);
+	ColorMapObject* palette=GifMakeMapObject(cello::maxPaletteSize, cello::defaultColourMap);
 	GifImageDesc desc= {0,0,cello::width,cello::height, true, palette};
 	SavedImage si={desc, myFrame.pixelArray, 0, NULL};
 	output->SavedImages=&si;
@@ -30,11 +29,13 @@ void writeTestGif() {
 	output->ExtensionBlockCount=0;
 	output->ExtensionBlocks=NULL;
 
-	EGifPutScreenDesc(output,cello::width,cello::height, 256,0,defaultPalette);
+	EGifPutScreenDesc(output,cello::width,cello::height, 256,0,palette);
 	EGifPutExtension(output, GRAPHICS_EXT_FUNC_CODE, 4, midExt);
 	EGifPutImageDesc(output,0,0,cello::width,cello::height, false,NULL);
-	for(int i=0; i<(cello::width.h	
-
+	for(int y=0, j=(cello::height-1)*cello::width; y<cello::height; y++, j-=cello::width) {
+		EGifPutLine(output, &(myFrame.pixelArray[j]), cello::width);
+	}
+	EGifCloseFile(output);
 	
 //	if(!EGifSpew(output)) { cout << "Error: failed to spew" << endl;}
 	cout << "done" << endl;
