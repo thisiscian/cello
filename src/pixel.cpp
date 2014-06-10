@@ -8,6 +8,13 @@ Pixel::Pixel(GifByteType *R, GifByteType *G, GifByteType *B) {
 void Pixel::operator=(GifByteType grey) { *r=grey; *g=grey; *b=grey;}
 void Pixel::operator()(GifByteType grey) { *r=grey; *g=grey; *b=grey;}
 
+bool PixelCompare::operator()(const unsigned char* lhs, const unsigned char* rhs) {
+	int l=lhs[2]+lhs[1]*256+lhs[0]*256*256;
+	int r=rhs[2]+rhs[1]*256+rhs[0]*256*256;
+	if(l < r) { return true; }
+	return false;
+}
+
 bool PixelCompare::operator()(const Pixel& lhs, const Pixel& rhs) {
 	if(*(lhs.r) < *(rhs.r)) { return true; }
 	else if(*(lhs.r) > *(rhs.r)) { return false; }

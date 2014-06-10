@@ -12,6 +12,8 @@
 	};
 
 	class PixelCompare {
-		public: bool operator()(const Pixel& lhs, const Pixel& rhs);
+		public:
+			bool operator()(const Pixel& lhs, const Pixel& rhs);
+			bool operator()(const unsigned char* lhs, const unsigned char* rhs);
 	};
 #endif

@@ -38,24 +38,10 @@ int writeAnimation() {
 		EGifPutImageDesc(output,0,0,cello::width,cello::height,false,palette);
 		
 		for(int i=0; i<cello::height; i++) {
-			for(int j=0; j<cello::width; j++) {
-				for(int k=0; k<3; k++) {
-					EGifPutPixel(output, frame.pixels[3*cello::width*i+3*j+k]);
-				}
-			}
+			EGifPutLine(output, &(frame.pixels[i]), cello::width);
 		}
-
-		//for(int i=0; i<cello::height; i++) {
-		//for(int i=cello::height-1; i>=0; i--) {
-		//	EGifPutLine(output, &(frame.pixels[j]), cello::width);
-		//}
 	}
 
-	// close infiniteLoop
-	if(cello::infiniteLoop) {
-		char loopControl[3]={1,0,0};
-	//	EGifPutExtension(output, APPLICATION_EXT_FUNC_CODE,3, loopControl);
-	}
 	EGifCloseFile(output);
 	cout << "Saved gif to " << cello::fileName << endl;
 }
