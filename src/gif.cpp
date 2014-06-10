@@ -11,10 +11,9 @@ using std::setw;
 using std::set;
 std::fstream gif::gout;
 
-
-
-
 namespace gif {
+	int width=100;
+	int height=100;
 	char backgroundColour=0;
 	int colourResolution=255;
 	char applicationBlock[2]={0x21,0xFF};
@@ -23,10 +22,9 @@ namespace gif {
 	char endBlock=0x00;
 	char noTransparency=0x08;
 	char transparency=0x00;
-	char transparencyColour=0x00;
+	char transparentColour=0x00;
 	int delay=9;
 }
-
 
 void gif::init(string filename, int w, int h) {
 	gif::width=w;
@@ -74,9 +72,18 @@ void gif::drawFrame(unsigned char* frame) {
 }
 
 void gif::writeTableAndFrame(unsigned char* frame) {
-	set<char*, PixelCompare> uniqueColours;
+	set<Pixel> uniqueColours;
 	unsigned char colourTable[256*3] = {0};
 	for(int i=0; i<gif::width*gif::height; i++) {
+		uniqueColours.insert(Pixel(&frame[3*i]));
 	}
+	int i=0;
+	for(set<Pixel>::iterator it=uniqueColours.begin(); it!=uniqueColours.end(); ++it) {
+		if(i++==256) { break; }
+		colourTable[i*3+0]=(*it)[0];
+		colourTable[i*3+1]=(*it)[1];
+		colourTable[i*3+2]=(*it)[2];
+	}
+	gif::gout.write(colourTable,256*3);
 	//gif::gout.write(frame, gif::width*gif::height*3);
 }

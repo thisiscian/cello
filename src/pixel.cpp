@@ -1,29 +1,21 @@
 #include<cello/pixel.h>
-using std::set;
 
-Pixel::Pixel(GifByteType *R, GifByteType *G, GifByteType *B) {
-	r=R; g=G; b=B;
+Pixel::Pixel(unsigned char* P) {
+	p=P;
 }
 
-void Pixel::operator=(GifByteType grey) { *r=grey; *g=grey; *b=grey;}
-void Pixel::operator()(GifByteType grey) { *r=grey; *g=grey; *b=grey;}
-
-bool PixelCompare::operator()(const unsigned char* lhs, const unsigned char* rhs) {
-	int l=lhs[2]+lhs[1]*256+lhs[0]*256*256;
-	int r=rhs[2]+rhs[1]*256+rhs[0]*256*256;
-	if(l < r) { return true; }
-	return false;
+unsigned char Pixel::operator[](int x) {
+	return *(p+x);
 }
 
-bool PixelCompare::operator()(const Pixel& lhs, const Pixel& rhs) {
-	if(*(lhs.r) < *(rhs.r)) { return true; }
-	else if(*(lhs.r) > *(rhs.r)) { return false; }
+const unsigned char Pixel::operator[](int x) const {
+	return *(p+x);
+}
 
-	if(*(lhs.g) < *(rhs.g)) { return true; }
-	else if(*(lhs.g) > *(rhs.g)) { return false; }
+const int Pixel::sum() const {
+	return 256*256*(*(p))+256*(*(p+1))+(*(p+2));
+}
 
-	if(*(lhs.b) < *(rhs.b)) { return true; }
-	else if(*(lhs.b) > *(rhs.b)) { return false; }
-
-	return false;
+bool Pixel::operator<(const Pixel& P) {
+	return sum() < P.sum();	
 }

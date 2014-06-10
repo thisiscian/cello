@@ -15,10 +15,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include/")
 add_library(
 	${PROJECT_NAME}
 	src/gif.cpp
-	src/settings.cpp
 	src/pixel.cpp
-	src/frame.cpp
-	src/animation.cpp
 )
 	
 target_link_libraries(${PROJECT_NAME} boost_program_options gif)
@@ -31,5 +28,4 @@ macro(add_animation arg)
 	target_link_libraries(${arg} ${PROJECT_NAME})
 endmacro(add_animation)
 
-add_animation(test1)
 add_animation(test2)

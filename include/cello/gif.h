@@ -6,8 +6,8 @@
 	#include <set>
 
 	namespace gif {
-		int width;
-		int height;
+		extern int width;
+		extern int height;
 		extern char backgroundColour;
 		extern int colourResolution;
 		extern char applicationBlock[2];
@@ -22,11 +22,5 @@
 		void drawFrame(unsigned char* frame);	
 		void writeTableAndFrame(unsigned char* frame);
 	}	
-
-	class Pixel {
-		Pixel(unsigned char* p);
-		unsigned char operator[](size_t x);
-		const unsigned char operator[](size_t x) const;
-	};
 
 #endif
