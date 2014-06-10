@@ -16,13 +16,16 @@ int writeAnimation() {
 
 	// initiate infiniteLoop
 	if(cello::infiniteLoop) {
-		char loopCode[16]={0x4E,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2E,0x30,0x03,0x01,0x00,0x00,0x00};
-		EGifPutExtension(output, APPLICATION_EXT_FUNC_CODE,16,loopCode);
+		char loopCode[11]={0x4E,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2E,0x30};
+		unsigned char loopControl[4]={0x01, 0xFF,0xFF,0x00};
+		EGifPutExtensionLeader(output, APPLICATION_EXT_FUNC_CODE);
+		EGifPutExtensionBlock(output, 11,loopCode);
+		EGifPutExtensionBlock(output, 3,loopControl);
+		EGifPutExtensionTrailer(output);
 	}
 
 	// write frames to file
 	for(cello::currentFrame=0; cello::currentFrame<cello::period; cello::currentFrame++) {
-
 		char frameControl[4]={0x04,0x00,0x00,0xff};
 		frameControl[1]=(int)(frame.delay*100) % 256;
 		frameControl[2]=(int)(frame.delay*100) / 256;
@@ -30,15 +33,22 @@ int writeAnimation() {
 
 		frame.draw();
 		frame.defaultRestrictPalette();
-		cout << (int) frame.pixels[102] << endl;
 		const GifColorType* colourMap=frame.getColourMap();
 		ColorMapObject* palette=GifMakeMapObject(cello::maxPaletteSize, colourMap);
 		EGifPutImageDesc(output,0,0,cello::width,cello::height,false,palette);
 		
 		for(int i=0; i<cello::height; i++) {
-		//for(int i=cello::height-1; i>=0; i--) {
-			EGifPutLine(output, &(frame.pixels[i*cello::height]), cello::width);
+			for(int j=0; j<cello::width; j++) {
+				for(int k=0; k<3; k++) {
+					EGifPutPixel(output, frame.pixels[3*cello::width*i+3*j+k]);
+				}
+			}
 		}
+
+		//for(int i=0; i<cello::height; i++) {
+		//for(int i=cello::height-1; i>=0; i--) {
+		//	EGifPutLine(output, &(frame.pixels[j]), cello::width);
+		//}
 	}
 
 	// close infiniteLoop

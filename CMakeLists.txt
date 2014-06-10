@@ -3,7 +3,7 @@ project (cello)
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 0)
 set (TITLE "${PROJECT_NAME}")
-set (CMAKE_CXX_FLAGS "-O2 -lboost_program_options -lgif")
+set (CMAKE_CXX_FLAGS "-O2")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/configurable/version.h.in"
@@ -12,11 +12,22 @@ configure_file (
 
 include_directories("${PROJECT_SOURCE_DIR}/include/")
 
-add_executable(
+add_library(
 	${PROJECT_NAME}
-	src/main.cpp
 	src/settings.cpp
 	src/pixel.cpp
 	src/frame.cpp
 	src/animation.cpp
 )
+	
+target_link_libraries(${PROJECT_NAME} boost_program_options gif)
+
+macro(add_animation arg) 
+	add_executable (
+		${arg}
+		animation/${arg}.cpp
+	)
+	target_link_libraries(${arg} ${PROJECT_NAME})
+endmacro(add_animation)
+
+add_animation(test1)
