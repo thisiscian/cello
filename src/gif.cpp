@@ -1,7 +1,5 @@
 #include<cello/gif.h>
 #include<iostream>
-#include<cstdio>
-#include<cello/pixel.h>
 using std::hex;
 using std::setfill;
 using std::string;
@@ -20,6 +18,7 @@ namespace gif {
 	char graphicBlock[2]={0x21,0xF7};
 	char imageBlock=0x2c;
 	char endBlock=0x00;
+	char pixelAspectRatio=0;
 	char noTransparency=0x08;
 	char transparency=0x00;
 	char transparentColour=0x00;
@@ -56,6 +55,10 @@ void gif::init(string filename, int w, int h) {
 	gif::gout << gif::endBlock;
 }
 
+void gif::writeColourTable(unsigned char* frame) {
+	char lwzMinCodeSize=8;
+}
+
 void gif::drawFrame(unsigned char* frame) {
 	int pos[2]={0,0};
 	char graphicBlockContent[5]={0x04,gif::noTransparency,gif::delay%256, gif::delay/256, gif::transparentColour};
@@ -69,11 +72,14 @@ void gif::drawFrame(unsigned char* frame) {
 		gif::gout.write(size, 4);
 		gif::writeTableAndFrame(frame);
 	gif::gout << gif::endBlock;
+	gif::gout << (char) 0x3B; 
 }
 
 void gif::writeTableAndFrame(unsigned char* frame) {
 	set<Pixel> uniqueColours;
-	unsigned char colourTable[256*3] = {0};
+	char colourTable[256*3] = {0};
+	gif::gout << (char) 256;
+	gif::gout << (char) 0 << (char) 0;
 	for(int i=0; i<gif::width*gif::height; i++) {
 		uniqueColours.insert(Pixel(&frame[3*i]));
 	}
@@ -85,5 +91,18 @@ void gif::writeTableAndFrame(unsigned char* frame) {
 		colourTable[i*3+2]=(*it)[2];
 	}
 	gif::gout.write(colourTable,256*3);
-	//gif::gout.write(frame, gif::width*gif::height*3);
+	char lzwFrame[gif::width*gif::height]={0};
+	for(int i=0; i<gif::width*gif::height; i++) {
+		for(int j=0; j<256; j++) {
+			if(Pixel(&colourTable[3*j])==Pixel(&frame[3*i])) {
+				lzwFrame[i]=(unsigned char) j;
+				break;
+			}
+		}
+		lzwFrame[i]=0;
+	}
+	gif::gout.write(lzwFrame,gif::width*gif::height);
+	gif::gout << (char) 0;
 }
+
+

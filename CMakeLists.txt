@@ -14,6 +14,8 @@ include_directories("${PROJECT_SOURCE_DIR}/include/")
 
 add_library(
 	${PROJECT_NAME}
+	src/image.cpp
+	src/frame.cpp
 	src/gif.cpp
 	src/pixel.cpp
 )
