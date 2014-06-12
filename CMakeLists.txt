@@ -14,13 +14,13 @@ include_directories("${PROJECT_SOURCE_DIR}/include/")
 
 add_library(
 	${PROJECT_NAME}
-	src/image.cpp
+	src/cello.cpp
 	src/frame.cpp
-	src/gif.cpp
 	src/pixel.cpp
+	src/gif.cpp
 )
 	
-target_link_libraries(${PROJECT_NAME} boost_program_options gif)
+target_link_libraries(${PROJECT_NAME})
 
 macro(add_animation arg) 
 	add_executable (

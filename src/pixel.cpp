@@ -1,5 +1,9 @@
 #include<cello/pixel.h>
 
+Pixel::Pixel() {
+	p=NULL;
+}
+
 Pixel::Pixel(unsigned char* P) {
 	p=P;
 }
@@ -26,4 +30,18 @@ bool Pixel::operator<(const Pixel& P) const {
 
 bool Pixel::operator==(const Pixel& P) const {
 	return sum()==P.sum();
+}
+
+void Pixel::set(char* P) {
+	p=(unsigned char*) P;
+}
+
+void Pixel::set(unsigned char* P) {
+	p=P;
+}
+
+void Pixel::colour(unsigned char r, unsigned char g, unsigned char b) {
+	*p=r;
+	*(p+1)=g;
+	*(p+2)=b;
 }

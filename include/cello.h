@@ -3,5 +3,5 @@
 	#include "cello/gif.h"
 	#include "cello/pixel.h"
 	#include "cello/frame.h"
-	#include "cello/image.h"
+	#include "cello/cello.h"
 #endif
