@@ -1,9 +1,12 @@
 #include<cello/gif.h>
+#include<iomanip>
 #include<iostream>
 using std::string;
 using std::set;
 using std::min;
 using gif::gout;
+using std::cout;
+using std::endl;
 
 namespace gif {
 	std::fstream gout;
@@ -33,9 +36,7 @@ void gif::writeLogicalScreenDescriptor(int width, int height, int table, int res
 
 void gif::writeColourTable(int size, char* table) {
 	if(table!=NULL && size > 0) 
-		for(int i=0; i<size*3; i++) {
-			gout << (char) *(table+i);
-		}	
+		gout.write(table, size*3);
 }
 
 void gif::writeImageDescriptor(int left, int top, int width, int height, int table, int interlace, int sort, int tableSize) {
@@ -47,7 +48,7 @@ void gif::writeImageDescriptor(int left, int top, int width, int height, int tab
 	gout << (char) (128*table+64*interlace+32*sort+tableSize);
 }
 
-void gif::writeTableImageData(char minLZWSize, char size, char* data) {
+void gif::writeTableBasedImageData(char minLZWSize, char size, char* data) {
 	gout << minLZWSize;
 	for(int i=0,j=min(255,size-i); i<size; j=min(255,size-i),i+=j) {
 		writeDataSubBlock(j, data+i);
@@ -55,9 +56,15 @@ void gif::writeTableImageData(char minLZWSize, char size, char* data) {
 	gif::writeBlockTerminator();
 }
 
-void gif::writeGraphicControlExtension(char label, char size, int disposal, int ui, char transparent, int delay, char transparentColour) {
-	gout << (char) 0x21 << label << size;
-	gout << (char) (transparent+2*ui+4*disposal);
+void gif::writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, char transparentColour) {
+	cout << std::hex << std::showbase << 0x21 << " " << 0xF9 << " " << 4;
+	cout << std::hex << std::showbase << " " << (4*disposal+2*ui+transparent) << std::dec << "(" <<  4*disposal << "+" << 2*ui << "+" << transparent << ")" ;
+	cout << std::hex << std::showbase << " " << (delay%256) << " " << (delay/256);
+	cout << std::hex << std::showbase << " " << transparentColour;
+	cout << std::dec << endl;
+
+	gout << (char) 0x21 << (char) 0xF9 << (char) 4;
+	gout << (char) (4*disposal+2*ui+transparent);
 	gout << (char) (delay%256) << (char) (delay/256);
 	gout << transparentColour;
 	writeBlockTerminator();

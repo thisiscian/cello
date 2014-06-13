@@ -1,28 +1,32 @@
-#include <cello.hpp>
+#include<cello.h>
+#include<iostream>
+#include<iomanip>
 using namespace std;
-
-void Frame::draw() {
-	int i;
-	int x=cello::height*cello::width*1.5;
-	int max=cello::height*cello::width*3;
-	cout<< "cello::height:" << cello::height << " cello::width:" << cello::width  << "(" << x << "," << max << ")" <<endl;
-	for(i=0; i<x; i+=3) {
-		pixels[i]=0; // red
-		pixels[i+1]=0; //blue
-		pixels[i+2]=255; //green rbg?
-	}
-	for(i=x; i<max; i+=3) {
-		pixels[i]=255;
-		pixels[i+1]=0;
-		pixels[i+2]=0;
-	}
-}
+using gif::gout;
 
 int main(int argc, char* argv[]) {
-	Settings s(argc, argv);	
-	cello::fileName="test1.gif";
-	cello::infiniteLoop=true;
-	cello::period=2;
-	writeAnimation();
+	int w=10, h=10;
+	cello::start("test1.gif",w,h);
+	Frame frame;
+
+	for(int i=0; i<h; i++) {
+		for(int j=0; j<w; j++) {
+			frame.pixels[i*w+j].colour(255,255,255);
+		}
+	}
+	frame.draw();
+	for(int i=0; i<h; i++) {
+		for(int j=0; j<w; j++) {
+			frame.pixels[i*w+j].colour(0,0,0);
+		}
+	}
+	//frame.draw();
+	for(int i=0; i<h; i++) {
+		for(int j=0; j<w; j++) {
+			frame.pixels[i*w+j].colour(255,255,0);
+		}
+	}
+	//frame.draw();
+	cello::stop();
 	return 0;
 }

@@ -22,7 +22,7 @@ void cello::start(string filename, int w, int h) {
 	gout.open(filename.c_str(), std::fstream::out | std::fstream::app);
 
 	gif::writeHeader("89a");
-	gif::writeLogicalScreenDescriptor(w,h,0,8,0,8,0xFF,0x00);
+	gif::writeLogicalScreenDescriptor(w,h,0,8,0,0,0,0);
 	gif::writeColourTable(0,NULL);
 	gif::writeApplicationExtension(0xFF, 11, "NETSCAPE", "2.0");
 		gif::writeDataSubBlock(3,loopControl);

@@ -2,6 +2,8 @@
 #define __cello_frame__
 	#include<cmath>
 	#include<set>
+	#include<vector>
+	#include<map>
 	#include<cello/cello.h>
 	#include<cello/pixel.h>
 	#include<cello/gif.h>

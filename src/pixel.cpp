@@ -21,7 +21,7 @@ const unsigned char Pixel::operator[](int x) const {
 }
 
 const int Pixel::sum() const {
-	return 256*256*(*(p))+256*(*(p+1))+(*(p+2));
+	return 256*256*(p[0])+256*(p[1])+(p[2]);
 }
 
 bool Pixel::operator<(const Pixel& P) const {

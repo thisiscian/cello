@@ -30,4 +30,6 @@ macro(add_animation arg)
 	target_link_libraries(${arg} ${PROJECT_NAME})
 endmacro(add_animation)
 
+add_animation(test1)
 add_animation(test2)
+

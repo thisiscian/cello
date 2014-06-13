@@ -7,6 +7,8 @@ using gif::gout;
 int main(int argc, char* argv[]) {
 	int w=10, h=10;
 	cello::start("test2.gif",w,h);
+	unsigned char r[3]={255,0,0}, wh[3]={255,255,255}, b[3]={0,0,255};
+	Pixel red(r), white(wh), blue(b);
 	Frame frame;
 
 	for(int i=0; i<3; i++) {
@@ -31,10 +33,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	for(int i=0; i<100; i++) {
-		if(frame.pix[3*i]==0) { cout << "B"; }
-		else if(frame.pix[3*i+2]==0) { cout << "R"; }
-		else if(frame.pix[3*i+1]==255) { cout << "W"; }
-		else { cout << "?"; }
+		if(frame.pixels[i]==white) { cout << "W"; }
+		else if(frame.pixels[i]==red) { cout << "R"; }
+		else if(frame.pixels[i]==blue) { cout << "B"; }
 		if(i%10==9) { cout << endl; }
 	}
 
