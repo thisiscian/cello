@@ -12,7 +12,7 @@ void cello::start(string filename, int w, int h) {
 	cello::width=w;
 	cello::height=h;
 	cello::delay=9;
-	char loopControl[3]={0x01,0xFF,0xFF};
+	byte loopControl[3]={0x01,0xFF,0xFF};
 
 	// clears the file to be written to
 	gout.open(filename.c_str(), std::fstream::out | std::fstream::trunc);

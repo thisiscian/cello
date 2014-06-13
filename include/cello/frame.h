@@ -12,11 +12,11 @@
 			float delay;
 			Frame();
 			void draw();	
-			unsigned char* pix;
+			byte* pix;
 			Pixel* pixels;
 		private:	
 			int width, height;
 	};
 	
-	void drawImage(char* p, int posX, int posY, int w, int h, int fw, int fh);
+	void drawImage(byte* p, int posX, int posY, int w, int h, int fw, int fh);
 #endif

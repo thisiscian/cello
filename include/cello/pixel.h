@@ -13,6 +13,7 @@
 		void set(unsigned char* P);
 		void set(char* P);
 		void colour(unsigned char r, unsigned char b, unsigned char g);
+		void colour(const Pixel &P);
 		private:
 		unsigned char* p;
 		const int sum() const;

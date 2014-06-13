@@ -40,6 +40,12 @@ void Pixel::set(unsigned char* P) {
 	p=P;
 }
 
+void Pixel::colour(const Pixel &P) {
+	*p=P[0];
+	*(p+1)=P[1];
+	*(p+2)=P[2];
+}
+
 void Pixel::colour(unsigned char r, unsigned char g, unsigned char b) {
 	*p=r;
 	*(p+1)=g;
