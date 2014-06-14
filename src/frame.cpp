@@ -31,20 +31,25 @@ vector<char> convertCompressLZW(code lzw, int lzwMinCodeSize) {
 	vector<int> b;
 	vector<char> o;
 	for(int i=0; i<lzw.size(); i++) {
-		int j=max((int) log((lzw[i])/log(2)), lzwMinCodeSize);
-		int k=lzw[i];
-		cout << "converting " << k << " (" << j << ") to ";	
-		for(int l=0; l<=j; l++) {
+		int k=lzw[i];	
+		cout <<  k << "->" ;
+		for(int l=0; l<lzwMinCodeSize; l++) {
 			b.push_back( (k & (1<<l)) == pow(2,l));
 			cout << (int) ((k & (1<<l)) == pow(2,l));	
 		}
 		cout << endl;
 	}
-	int j=0;	
+	int j=5;	
 	byte O=0;
+	//
+	// --> THIS IS VERY WRONG
+	//
 	for(int i=0; i<b.size(); i++) {
 		O+=pow(2,j++)*b[i];
 		if(j==8) {
+			j=0;
+		}
+		if(j==4) {
 			j=0;
 			o.push_back(O);
 			O=0;
@@ -104,10 +109,11 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	int tableSize=1;
 	for(set<Pixel>::iterator it=uniqueColours.begin(); it!=uniqueColours.end(); ++it) {
 		colours[tableSize++].colour(*it);
+		cout << "colour->" << (int) (*it)[0] << "," << (int) (*it)[1] << "," << (int) (*it)[2] << endl;
 	}
 
 	// translate pixels from image into an stream of indices relating to the values in the colour table
-	byte colourTableSize=(byte) ((int) ceil(log(tableSize-1)/log(2)));
+	byte colourTableSize=(byte) ceil(log(tableSize)/log(2)-1);
 	for(int i=0; i<height; i++) {
 		for(int j=0; j<width; j++) {
 			for(int k=0; k<pow(2,colourTableSize+1); k++) {
@@ -120,33 +126,32 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	}
 	
 	// we need these variables for the gif
-	byte lzwMinCodeSize=8; // this defines how much precision we can expect from the definition of each pixel, 8 is the easiest
-	int clearCode=pow(2,lzwMinCodeSize);
+	int clearCode=tableSize;
 	int eoiCode=(clearCode+1);
 	int freeCode=(eoiCode+1);
-	cout << "lzwMinCodeSize=" << (int) lzwMinCodeSize << endl;
 	cout << "clearCode=" << clearCode << endl;
 	cout << "eoiCode=" << eoiCode << endl;
 	cout << "first freeCode=" << freeCode << endl;
 
 	// write the indexes that could be found in the indexStream
 	map<code,int> codeList;
-	for(int i=0; i<clearCode; i++) {
+	for(int i=0; i<freeCode; i++) {
 		codeList[code(1,i)]=i;
 	}
 
 	// lzw compression
 	code lzwList(1,clearCode);
 	code inputBuffer(1,indexStream[0]);
+	int maxUsedCode=0;
 	for(int i=1; i<width*height; i++) {
 		int newIndex=indexStream[i];	
 		code newBuffer=inputBuffer;
 		newBuffer.push_back(newIndex);
 		if(codeList.count(newBuffer)==0) {
-			lzwList.push_back(codeList[inputBuffer]);
-			cout << "freeCode was " << freeCode;
+			int cd=codeList[inputBuffer];
+			lzwList.push_back(cd);
+			maxUsedCode=(cd > maxUsedCode)? cd: maxUsedCode;
 			codeList[newBuffer]=freeCode++;
-			cout << " and is now " << freeCode << " (" << lzwList[lzwList.size()-1] << ")" << endl;
 			inputBuffer=code(1,newIndex);
 		} else {
 			inputBuffer=newBuffer;
@@ -155,6 +160,9 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	lzwList.push_back(codeList[inputBuffer]);
 	lzwList.push_back(eoiCode);
 
+
+	byte lzwMinCodeSize=(byte) ceil(log((int) maxUsedCode)/log(2));
+	cout << "lzwMinCodeSize=" << (int) lzwMinCodeSize << endl;
 	vector<char> lzwCompress= convertCompressLZW(lzwList, lzwMinCodeSize);
 	
 	byte lzwSize=lzwCompress.size();
@@ -169,7 +177,3 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	gif::writeColourTable(tableSize, colourTable);
 	gif::writeTableBasedImageData(lzwMinCodeSize, lzwSize, lzw);
 }
-
-
-
-
