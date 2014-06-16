@@ -31,14 +31,6 @@ int main(int argc, char* argv[]) {
 			frame.pixels[i*w+j+w/2].colour(0,0,255);
 		}
 	}
-
-	for(int i=0; i<100; i++) {
-		if(frame.pixels[i]==white) { cout << "W"; }
-		else if(frame.pixels[i]==red) { cout << "R"; }
-		else if(frame.pixels[i]==blue) { cout << "B"; }
-		if(i%10==9) { cout << endl; }
-	}
-
 	frame.draw();
 	cello::stop();
 	return 0;
