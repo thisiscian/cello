@@ -25,38 +25,38 @@ Frame::Frame() {
 	delay=cello::delay;
 }
 
-typedef vector<int> code;
+typedef vector<int> Code;
 
-vector<char> convertCompressLZW(code lzw, int lzwMinCodeSize) {
-	vector<int> b;
-	vector<char> o;
-	for(int i=0; i<lzw.size(); i++) {
-		int k=lzw[i];	
-		cout <<  k << "->" ;
-		for(int l=0; l<lzwMinCodeSize; l++) {
-			b.push_back( (k & (1<<l)) == pow(2,l));
-			cout << (int) ((k & (1<<l)) == pow(2,l));	
+vector<byte> compressIndexStream(Code indexStream, int minCodeSize) {
+	vector<int> bitStream;
+	vector<byte> outStream;
+	int codeSize=minCodeSize;
+
+	for(int i=0; i<indexStream.size(); i++) {
+		while(	pow(2,codeSize)<= indexStream[i] ) {codeSize++; }
+		for(int j=0; j<codeSize; j++) {
+			int bit=((indexStream[i] & (1<<j)) == pow(2,j));
+			bitStream.push_back(bit);
+		}
+		cout << codeSize << ":" << indexStream[i] << "=";
+		for(int j=codeSize-1; j>=0; j--) {
+			int bit=((indexStream[i] & (1<<j)) == pow(2,j));
+			cout << bit;
 		}
 		cout << endl;
 	}
-	int j=5;	
-	byte O=0;
-	//
-	// --> THIS IS VERY WRONG
-	//
-	for(int i=0; i<b.size(); i++) {
-		O+=pow(2,j++)*b[i];
-		if(j==8) {
-			j=0;
+
+	byte code=0;
+	for(int i=0; i<bitStream.size(); i++) {
+		code+=bitStream[i]*pow(2,(i+0)%8);
+		cout << bitStream[i]*pow(2,i%8) << "+";
+		if(i%8==7) {
+			outStream.push_back(code);
+			cout << "=" << (int) code << endl;
+			code=0;
 		}
-		if(j==4) {
-			j=0;
-			o.push_back(O);
-			O=0;
-		}
-	}
-	o.push_back(O);
-	return o;
+	}	
+	return outStream;
 }
 
 
@@ -126,33 +126,34 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	}
 	
 	// we need these variables for the gif
-	int clearCode=tableSize;
+	int clearCode=pow(2,tableSize);
 	int eoiCode=(clearCode+1);
 	int freeCode=(eoiCode+1);
+	byte lzwMinCodeSize=(byte) max(2.0,floor(log(eoiCode)/log(2)));
 	cout << "clearCode=" << clearCode << endl;
 	cout << "eoiCode=" << eoiCode << endl;
 	cout << "first freeCode=" << freeCode << endl;
 
 	// write the indexes that could be found in the indexStream
-	map<code,int> codeList;
+	map<Code,int> codeList;
 	for(int i=0; i<freeCode; i++) {
-		codeList[code(1,i)]=i;
+		codeList[Code(1,i)]=i;
 	}
 
 	// lzw compression
-	code lzwList(1,clearCode);
-	code inputBuffer(1,indexStream[0]);
+	Code lzwList(1,clearCode);
+	Code inputBuffer(1,indexStream[0]);
 	int maxUsedCode=0;
 	for(int i=1; i<width*height; i++) {
 		int newIndex=indexStream[i];	
-		code newBuffer=inputBuffer;
+		Code newBuffer=inputBuffer;
 		newBuffer.push_back(newIndex);
 		if(codeList.count(newBuffer)==0) {
 			int cd=codeList[inputBuffer];
 			lzwList.push_back(cd);
 			maxUsedCode=(cd > maxUsedCode)? cd: maxUsedCode;
 			codeList[newBuffer]=freeCode++;
-			inputBuffer=code(1,newIndex);
+			inputBuffer=Code(1,newIndex);
 		} else {
 			inputBuffer=newBuffer;
 		}
@@ -161,15 +162,14 @@ void drawImage(byte* p, int width, int height, int fw, int fh, int x, int y) {
 	lzwList.push_back(eoiCode);
 
 
-	byte lzwMinCodeSize=(byte) ceil(log((int) maxUsedCode)/log(2));
 	cout << "lzwMinCodeSize=" << (int) lzwMinCodeSize << endl;
-	vector<char> lzwCompress= convertCompressLZW(lzwList, lzwMinCodeSize);
+	vector<byte> lzwCompress= compressIndexStream(lzwList, lzwMinCodeSize);
 	
 	byte lzwSize=lzwCompress.size();
 	byte lzw[lzwSize];
-	int i=1;
+	int i=0;
 
-	for(vector<char>::iterator it=lzwCompress.begin(); it!=lzwCompress.end(); ++it) {
+	for(vector<byte>::iterator it=lzwCompress.begin(); it!=lzwCompress.end(); ++it) {
 		lzw[i++]=(*it);
 	}
 
