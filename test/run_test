@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+
+testDir=$(dirname $0)
+compareGif="$testDir/$1.gif"
+outputGif="$1.gif"
+
+## check comparison gif exists
+if [[ ! -f $compareGif ]]; then
+  echo "could not find comparison gif";
+	exit 1
+fi
+
+## check executable exists
+if [[ ! -x $1 ]]; then
+  echo "could not find test";
+	exit 1
+fi
+
+./$1 >/dev/null
+
+## check comparison gif exists
+if [[ ! -f $outputGif ]]; then
+  echo "could not find comparison gif";
+	exit 1
+fi
+
+## compare bytecode
+diff $compareGif $outputGif >/dev/null || exit 2;
+
+exit 0;

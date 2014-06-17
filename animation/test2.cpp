@@ -2,7 +2,6 @@
 #include<iostream>
 #include<iomanip>
 using namespace std;
-using gif::gout;
 
 int main(int argc, char* argv[]) {
 	int w=10, h=10;
