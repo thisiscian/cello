@@ -5,6 +5,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	int w=10, h=10;
+	cello::useStandard=true;
 	cello::start("test1.gif",w,h);
 	Frame frame;
 

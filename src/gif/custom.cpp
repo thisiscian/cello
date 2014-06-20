@@ -1,9 +1,12 @@
 #include<cello/gif/custom.h>
+#include<iostream>
 using std::string;
 using std::fstream;
 using std::set;
 using std::min;
 using cello::custom::gout;
+using std::cout;
+using std::endl;
 
 namespace cello {
 	namespace custom {
@@ -11,32 +14,29 @@ namespace cello {
 	}
 }
 
-void cello::custom::start(string filename, int w, int h) {
-	cello::width=w;
-	cello::height=h;
+void cello::custom::start() {
 	byte loopControl[3]={0x01,0xFF,0xFF};
 
 	// clears the file to be written to
-	gout.open(filename.c_str(), std::fstream::out | std::fstream::trunc);
+	gout.open(cello::filename.c_str(), std::fstream::out | std::fstream::trunc);
 	gout.close();
 
 	// reopens file, so can be appended to, and sets important flags
-	gout.open(filename.c_str(), std::fstream::out | std::fstream::app);
+	gout.open(cello::filename.c_str(), std::fstream::out | std::fstream::app);
 
-	cello::writeHeader("89a");
-	cello::writeLogicalScreenDescriptor(w,h,0,8,0,0,0,0);
-	cello::writeColourTable(0,NULL);
-	cello::writeApplicationExtension(0xFF, 11, "NETSCAPE", "2.0");
-		cello::writeDataSubBlock(3,loopControl);
-	cello::writeBlockTerminator();
+	writeHeader("89a");
+	writeLogicalScreenDescriptor(cello::width,cello::height,0,8,0,0,0,0);
+	writeColourTable(0,NULL);
+	writeApplicationExtension(0xFF, 11, "NETSCAPE", "2.0");
+		writeDataSubBlock(3,loopControl);
+	writeBlockTerminator();
 }
 
 void cello::custom::stop() {
-	cello::writeTrailer();
+	writeTrailer();
 //	gout << (byte) 0x0a;
 	gout.close();
 }
-
 
 void cello::custom::writeDataSubBlock(byte size, byte* data) {
 	gout << size;
@@ -79,7 +79,7 @@ void cello::custom::writeTableBasedImageData(byte minLZWSize, byte size, byte* d
 	for(int i=0,j=min(255,size-i); i<size; j=min(255,size-i),i+=j) {
 		writeDataSubBlock(j, data+i);
 	}
-	cello::custom::writeBlockTerminator();
+	writeBlockTerminator();
 }
 
 void cello::custom::writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, byte transparentColour) {

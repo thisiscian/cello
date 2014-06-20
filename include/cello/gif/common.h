@@ -4,13 +4,14 @@
 	#include<string>
 	#include<set>
 	#include<cmath>
-	#include<gif_lib.h>
 	typedef unsigned char byte;
 	namespace cello {
 		extern int width;
 		extern int height;
 		extern int delay;
 		extern bool useStandard;
+		extern std::string filename;
+		extern int currentFrame;
 	
 		void setFunctionsToCustom();
 		void setFunctionsToStandard();

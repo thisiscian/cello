@@ -3,7 +3,7 @@ project (cello)
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 0)
 set (TITLE "${PROJECT_NAME}")
-set (CMAKE_CXX_FLAGS "-O2")
+set (CMAKE_CXX_FLAGS "-O2 -g")
 set (TESTDIR "${PROJECT_SOURCE_DIR}/test")
 
 enable_testing()
@@ -19,9 +19,9 @@ add_library(
 	${PROJECT_NAME}
 	src/frame.cpp
 	src/pixel.cpp
-	src/gif/common.cpp
-	src/gif/custom.cpp
-	src/gif/standard.cpp
+	src/image.cpp
+	src/colourMap.cpp
+	src/cello.cpp
 )
 	
 target_link_libraries(${PROJECT_NAME} gif)

@@ -1,6 +1,7 @@
 #ifndef __cello_gif_standard__
 #define __cello_gif_standard__
 	#include<cello/gif/common.h>
+	#include<gif_lib.h>
 	#include<vector>
 
 	typedef unsigned char byte;
@@ -15,7 +16,7 @@
 			extern std::vector<SavedImage> savedImages;
 			extern int imageCount;
 
-			void start(std::string filename, int width, int height);
+			void start();
 			void stop();
 
 			int writeFunction(GifFileType *gf, const GifByteType *gb, int count);

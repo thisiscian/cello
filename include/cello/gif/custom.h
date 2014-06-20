@@ -14,7 +14,7 @@
 			void writeHeader(std::string version);
 			void writeBlockTerminator();
 			void writeDataSubBlock(byte size, byte* data);
-			void start(std::string filename, int width, int height);
+			void start();
 			void stop();
 		}	
 	}

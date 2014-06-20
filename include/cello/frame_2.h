@@ -4,9 +4,9 @@
 	#include<set>
 	#include<vector>
 	#include<map>
+	#include<cello/image.h>
 	#include<cello/pixel.h>
 	#include<cello/gif.h>
-	#include<cello/image.h>
 
 	typedef std::vector<int> Code;
 
@@ -15,10 +15,10 @@
 			float delay;
 			byte* pix;
 			Pixel* pixels;
-			std::vector<Image> images;
 
 			Frame();
-			void draw();	
+			void draw();
+			void write();
 		private:	
 			int width, height;
 			void drawImage(byte* p, int posX, int posY, int w, int h, int fw, int fh);

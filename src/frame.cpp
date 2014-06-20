@@ -4,6 +4,7 @@
 #include<sstream>
 using std::cout;
 using std::endl;
+
 using std::min;
 using std::max;
 using std::set;
@@ -33,7 +34,6 @@ vector<byte> Frame::compressIndexStream(Code indexStream, int minCodeSize) {
 	byte bitMultiplier=0;
 	
 	for(int i=0; i<indexStream.size(); i++) {
-		cout << indexStream[i] << ",";
 		while(pow(2,indexSize)<=indexStream[i]) {indexSize++; }
 		for(int j=0; j<indexSize; j++) {
 			int bit=((indexStream[i] & (1<<j)) == pow(2,j));
@@ -45,7 +45,6 @@ vector<byte> Frame::compressIndexStream(Code indexStream, int minCodeSize) {
 			}
 		}
 	}
-	cout << endl;
 	return outStream;
 }
 
@@ -53,9 +52,11 @@ void Frame::draw() {
 	cello::writeGraphicControlExtension(2,0,1,0,0x00);
 	for(int i=0, m=min(height,16); i<height; m=min(height-i,16), i+=m) {
 		for(int j=0, n=min(width,16); j<width; n=min(width-j,16), j+=n) {
+			cout << i << "," << j << endl;
 			drawImage((byte *) &(pix[3*(i*width+j)]), m,n, width, height, i,j);
 		}
 	}
+	cello::currentFrame++;
 }
 
 
@@ -102,7 +103,6 @@ void Frame::drawImage(byte* p, int width, int height, int fw, int fh, int x, int
 		for(int j=0; j<width; j++) {
 			for(int k=0; k<pow(2,colourTableSize+1); k++) {
 				if(colours[k]==pixels[i*width+j]) {
-					cout << i*width+j << "=" << k << endl;
 					indexStream[i*width+j]=k;
 					break;
 				}
