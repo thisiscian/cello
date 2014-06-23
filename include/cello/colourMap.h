@@ -3,6 +3,7 @@
 	#include<cstddef>
 	#include<gif_lib.h>
 	#include<set>
+	#include<cello/pixel.h>
 
 	typedef unsigned char Byte;
 
@@ -22,6 +23,7 @@
 		private:
 			size_t _size;
 			void initialise();
+			std::set<Pixel> unique;
 	};
 
 #endif

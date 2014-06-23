@@ -1,6 +1,7 @@
 #ifndef __cello_cello__
 #define __cello_cello__
 	#include <fstream>
+	#include <iostream>
 	#include <string>
 	#include <set>
 	#include <cmath>
@@ -9,16 +10,19 @@
 	#include <cello/image.h>
 	#include <cello/frame.h>
 	typedef unsigned char Byte;
+	int standardWrite(GifFileType * ft, const GifByteType * data, int count);
 
 	class Cello {
 		public:
 			Cello();
 
 			std::fstream gout;
+			Frame currentFrame;
 			int frameDelay;
 			int mode;
 				#define STANDARD 0
 				#define CUSTOM 1
+				#define BOTH 2
 			int frameCount;
 			ColourMap globalColourMap;
 			
@@ -28,7 +32,7 @@
 			int getHeight();
 			std::string getFilename();
 		
-			void addFrame(Frame frame);
+			void store();
 			void save();
 
 		private:
@@ -40,7 +44,6 @@
 			void initialise();
 			void customSave();
 			void standardSave();
-			int standardWrite(GifFileType * ft, const GifByteType * data, int count);
 		
 			void writeDataSubBlock(Byte size, Byte* data);
 			void writeBlockTerminator();
@@ -52,6 +55,6 @@
 			void writeApplicationExtension(Byte label, Byte size, std::string identifier, std::string auth);
 			void writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, Byte transparentColour);
 			void writeTrailer();
-	} Cello;
+	};
 
 #endif

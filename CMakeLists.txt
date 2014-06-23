@@ -32,7 +32,8 @@ macro(add_animation arg)
 		animation/${arg}.cpp
 	)
 	target_link_libraries(${arg} ${PROJECT_NAME})
-	add_test(${arg} ${TESTDIR}/run_test ${arg})
+	add_test(check_standard_${arg} ${TESTDIR}/check_standard ${arg})
+	add_test(check_custom_${arg} ${TESTDIR}/check_custom ${arg})
 endmacro(add_animation)
 
 add_animation(test1)

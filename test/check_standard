@@ -2,7 +2,7 @@
 
 testDir=$(dirname $0)
 compareGif="$testDir/$1.gif"
-outputGif="$1.gif"
+outputGif="STANDARD_$1.gif"
 
 ## check comparison gif exists
 if [[ ! -f $compareGif ]]; then

@@ -2,11 +2,14 @@
 #define __cello_image__
 	#include <cstddef>
 	#include <vector>
+	#include <map>
 	#include <cmath>
 	#include <cello/colourMap.h>
 
 	typedef unsigned char Byte;
 	typedef std::vector<Byte> IndexStream;
+	typedef std::vector<int> Code;
+	typedef std::vector<Code> codeStream;
 	class Image {
 		public:
 			Image(Byte* data, size_t width, size_t height, size_t frameWidth);
@@ -32,9 +35,8 @@
 		private:
 			size_t _left, _top, _width, _height, _minimumCodeSize, _frameWidth;
 			bool _interlace, _sort;
-			Byte *data;
+			Byte *data, *_rawData;
 			IndexStream _indexStream;
-
 
 			ColourMap makeColourMap(Byte* data, size_t width, size_t height, size_t frameWidth);
 			IndexStream makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap);

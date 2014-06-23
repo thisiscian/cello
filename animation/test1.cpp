@@ -5,16 +5,18 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	int w=10, h=10;
-	cello::useStandard=true;
-	cello::start("test1.gif",w,h);
-	Frame frame;
+	Cello cello;
+	cello.mode=BOTH;
+	cello.start("test1.gif",w,h);
+	Frame frame();
 
 	for(int i=0; i<h; i++) {
 		for(int j=0; j<w; j++) {
-			frame.pixels[i*w+j].colour(255,255,255);
+			cello.currentFrame.pixels[i*w+j].colour(255,255,255);
 		}
 	}
-	frame.draw();
-	cello::stop();
+
+	cello.store();
+	cello.save();
 	return 0;
 }

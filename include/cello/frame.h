@@ -17,12 +17,9 @@
 			Pixel* pixels;
 			std::vector<Image> images;
 
-			Frame();
-			void draw();	
+			void initialise(int w, int h, int d);
 		private:	
 			int width, height;
-			void drawImage(byte* p, int posX, int posY, int w, int h, int fw, int fh);
-			std::vector<byte> compressIndexStream(Code indexStream, int minCodeSize);
 	};
 	
 #endif

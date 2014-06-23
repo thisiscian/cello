@@ -1,16 +1,16 @@
 #include <cello/cello.h>
 using std::string;
 using std::fstream;
+using std::cout;
+using std::endl;
 
 Cello::Cello() {
 	initialise();
 }
 
-void Cello::start(string filename, size_t width, size_t height) {
-	filename=filename; width=width; height=height;
-  gout.open(filename.c_str(), fstream::out | fstream::trunc);
-  gout.close(); 
-  gout.open(filename.c_str(), fstream::out | fstream::app);
+void Cello::start(string f, size_t w, size_t h) {
+	filename=f; width=w; height=h;
+	currentFrame.initialise(width, height, frameDelay);
 }
 
 int Cello::getWidth() { return width ;};
@@ -21,21 +21,35 @@ void Cello::initialise() {
 	width=0; height=0; frameDelay=5; mode=1; filename="output.gif";
 }
 
-void Cello::addFrame(Frame frame) {
-	frames.push_back(frame);
+void Cello::store() {
+	frames.push_back(currentFrame);
 }
 
 void Cello::save() {
 	if(mode==STANDARD) {
+		cout << "saving " << filename << " using lib_gif methods" << endl;
 		standardSave();
 	} else if(mode==CUSTOM) {
+		cout << "saving " << filename << " using cello methods" << endl;
 		customSave();
+	} else if(mode==BOTH) {
+		cout << "saving " << filename << " using cello and lib_gif methods" << endl;
+		string title=filename;
+		filename="CUSTOM_"+title;
+		customSave();
+		filename="STANDARD_"+title;
+		standardSave();
 	}
 }
 
 void Cello::customSave() {
+	gout.open(filename.c_str(), fstream::out | fstream::trunc);
+  gout.close(); 
+  gout.open(filename.c_str(), fstream::out | fstream::app);
+	cout << "\tsaving: " << filename << endl;
+
 	writeHeader("89a");
-	writeLogicalScreenDescriptor(width,height,8,0,0,globalColourMap.size(),0);
+	writeLogicalScreenDescriptor(width,height,8,0,0,globalColourMap.size(),0);	
 	writeColourTable(globalColourMap.size(),globalColourMap.colours);
 	writeApplicationExtension(0xFF, 11, "NETSCAPE", "2.0");
 		Byte loopControl[3]={0x01,0xFF,0xFF};
@@ -44,14 +58,17 @@ void Cello::customSave() {
 
 	for(int i=0; i<frames.size(); i++) {
 		writeGraphicControlExtension(2,0,1,0,0x00);
-		for(int j=0; i<frames[i].images.size(); j++) {
+		for(int j=0; j<frames[i].images.size(); j++) {
+			cout << "\t\tanalysing frame #" << i+1 << "/" << frames.size() << " and image #" << j+1 <<  "/" << frames[i].images.size() << endl;
 			Image *image=&(frames[i].images[j]);
 
 			writeImageDescriptor(image->left(),image->top(), image->width(), image->height(), image->interlace(), image->sort(), image->colourMap.size());
+			cout << "\t\timage colourmap size: " << image->colourMap.size() << endl;
 			writeColourTable(image->colourMap.size(), image->colourMap.colours);
 
 			IndexStream compressed=image->getCompressedData();
 			int dataSize=compressed.size();
+			cout << "\t\tdataSize=" << compressed.size() << endl;
 			
 			Byte data[dataSize];
 			for(int i=0; i<dataSize; i++) {
@@ -65,39 +82,78 @@ void Cello::customSave() {
 	gout.close();	
 }
 
-int Cello::standardWrite(GifFileType * ft, const GifByteType * data, int count) {
+int standardWrite(GifFileType * ft, const GifByteType * data, int count) {
  	( (fstream *) ft->UserData )->write( (char*) data, count);
 	return count;
 }
 
 
 void Cello::standardSave() {
-	int err=0;
-	GifFileType *filetype=EGifOpen(&gout, &standardWrite, err);
+	gout.open(filename.c_str(), fstream::out | fstream::trunc);
+  gout.close(); 
+  gout.open(filename.c_str(), fstream::out | fstream::app);
+	cout << "\tsaving: " << filename << endl;
 
-	filetype->ImageCount=images.size();
-	filetype->SWidth=Cello::getWidth();
-	filetype->SHeight=Cello::getHeight();
-	filetype->SColorMap=globalColourMap.toStandard();
+	int err=0;
+	GifFileType *filetype=EGifOpen(&gout, &standardWrite, &err);
 
 	int imageCount=0;
 	for(int i=0; i<frames.size(); i++) {
 		imageCount+=frames[i].images.size();
 	}
 
-	SavedImage savedImages[imagesCount];
+	filetype->ImageCount=imageCount;
+	filetype->SWidth=getWidth();
+	filetype->SHeight=getHeight();
+	filetype->SColorMap=globalColourMap.toStandard();
+
+	SavedImage savedImages[imageCount];
 
 	for(int i=0; i<frames.size(); i++) {
-		for(int j=0; i<frames[i].images.size(); j++) {
+		for(int j=0; j<frames[i].images.size(); j++) {
+			cout << "\t\tanalysing frame #" << i+1 << "/" << frames.size() << " and image #" << j+1 <<  "/" << frames[i].images.size() << endl;
+			Image *image=&(frames[i].images[j]);
 			savedImages[i].ImageDesc.Left=image->left();
 			savedImages[i].ImageDesc.Top=image->top();
 			savedImages[i].ImageDesc.Width=image->width();
 			savedImages[i].ImageDesc.Height=image->height();
 			savedImages[i].ImageDesc.Interlace=image->interlace();
-			savedImages[i].Colors=image->colourMap.toStandard();
-			savedImages[i].RasterBits=images[i].getRawData();
-			savedImages[i].ExtensionBlockCount=(i==0)+(j==0);
-			savedImages[i].ExtensionBlocks=???;
+			savedImages[i].ImageDesc.ColorMap=image->colourMap.toStandard();
+			savedImages[i].RasterBits=image->getRawData();
+
+
+cout << "			savedImages[i].ImageDesc.Left=" << 			savedImages[i].ImageDesc.Left << endl;
+cout << "			savedImages[i].ImageDesc.Top=" << 			savedImages[i].ImageDesc.Top << endl;
+cout << "			savedImages[i].ImageDesc.Width=" << 			savedImages[i].ImageDesc.Width << endl;
+cout << "			savedImages[i].ImageDesc.Height=" << 			savedImages[i].ImageDesc.Height << endl;
+cout << "			savedImages[i].ImageDesc.Interlace=" << 			savedImages[i].ImageDesc.Interlace << endl;
+cout << "			savedImages[i].ImageDesc.ColorMap=" << 			savedImages[i].ImageDesc.ColorMap << endl;
+cout << "			savedImages[i].RasterBits=" << 			(long int) savedImages[i].RasterBits << endl;
+
+			if(i==0) {
+				ExtensionBlock blocks[2];
+				GifByteType animationBlockData[15]={0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,0x03,0x01,0xff,0xff};
+				GifByteType graphicBlockData[15]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
+				blocks[0].ByteCount=15;
+				blocks[0].Bytes=animationBlockData;
+				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
+				blocks[0].ByteCount=4;
+				blocks[0].Bytes=graphicBlockData;
+				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
+				savedImages[i].ExtensionBlockCount=2;
+				savedImages[i].ExtensionBlocks=blocks;
+			} else if(j==0) {
+				ExtensionBlock block;
+				GifByteType graphicBlockData[15]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
+				block.ByteCount=4;
+				block.Bytes=graphicBlockData;
+				block.Function=APPLICATION_EXT_FUNC_CODE;
+				savedImages[i].ExtensionBlockCount=1;
+				savedImages[i].ExtensionBlocks=&block;
+			} else {
+				savedImages[i].ExtensionBlockCount=0;
+				savedImages[i].ExtensionBlocks=NULL;
+			}
 		}
 	}
 
@@ -106,23 +162,22 @@ void Cello::standardSave() {
 }
 
 
-
-void cello::writeDataSubBlock(Byte size, Byte* data) {
+void Cello::writeDataSubBlock(Byte size, Byte* data) {
 	gout << size;
 	for(int i=0; i<(int) size; i++) {
 		gout << *(data+i);
 	}
 }
 
-void cello::writeBlockTerminator() {
+void Cello::writeBlockTerminator() {
 	gout << (Byte) 0x00;
 }
 
-void cello::writeHeader(string version) {
+void Cello::writeHeader(string version) {
 	gout << "GIF" << version.substr(0,3);
 }
 
-void cello::writeLogicalScreenDescriptor(int width, int height, int table, int resolution, int sort, int tableSize, Byte backgroundColour, Byte pixelAspectRatio) {
+void Cello::writeLogicalScreenDescriptor(int width, int height, int resolution, int sort, int tableSize, Byte backgroundColour, Byte pixelAspectRatio) {
 	int table=(tableSize!=0);	
 	gout << (Byte) (width%256) << (Byte) (width/256);
 	gout << (Byte) (height%256) << (Byte) (height/256);
@@ -130,12 +185,12 @@ void cello::writeLogicalScreenDescriptor(int width, int height, int table, int r
 	gout << backgroundColour << pixelAspectRatio;
 }
 
-void cello::writeColourTable(int size, Byte* table) {
+void Cello::writeColourTable(int size, Byte* table) {
 	if(table!=NULL && size > 0) 
 		gout.write(reinterpret_cast<char *>(table), size*3);
 }
 
-void cello::writeImageDescriptor(int left, int top, int width, int height, int interlace, int sort, int tableSize) {
+void Cello::writeImageDescriptor(int left, int top, int width, int height, int interlace, int sort, int tableSize) {
 	int table=(tableSize!=0);
 	gout << (Byte) 0x2c;
 	gout << (Byte) (left%256) << (Byte) (left/256);
@@ -145,15 +200,15 @@ void cello::writeImageDescriptor(int left, int top, int width, int height, int i
 	gout << (Byte) (128*table+64*interlace+32*sort+tableSize);
 }
 
-void cello::writeTableBasedImageData(Byte minLZWSize, Byte size, Byte* data) {
+void Cello::writeTableBasedImageData(Byte minLZWSize, Byte size, Byte* data) {
 	gout << minLZWSize;
-	for(int i=0,j=min(255,size-i); i<size; j=min(255,size-i),i+=j) {
+	for(int i=0,j=std::min(255,size-i); i<size; j=std::min(255,size-i),i+=j) {
 		writeDataSubBlock(j, data+i);
 	}
 	writeBlockTerminator();
 }
 
-void cello::writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, Byte transparentColour) {
+void Cello::writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, Byte transparentColour) {
 	gout << (Byte) 0x21 << (Byte) 0xF9 << (Byte) 4;
 	gout << (Byte) (4*disposal+2*ui+transparent);
 	gout << (Byte) (delay%256) << (Byte) (delay/256);
@@ -161,14 +216,12 @@ void cello::writeGraphicControlExtension(int disposal, int ui, int transparent, 
 	writeBlockTerminator();
 }
 
-void cello::writeApplicationExtension(Byte label, Byte size, string identifier, string auth) {
+void Cello::writeApplicationExtension(Byte label, Byte size, string identifier, string auth) {
 	gout << (Byte) 0x21 << label << size;
 	gout << identifier.substr(0,8);
 	gout << auth.substr(0,3);
 }
 
-void cello::writeTrailer() {
+void Cello::writeTrailer() {
 	gout << (Byte) 0x3B;
 }
-
-
