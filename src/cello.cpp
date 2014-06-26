@@ -22,6 +22,7 @@ void Cello::initialise() {
 }
 
 void Cello::store() {
+	currentFrame.makeImages();
 	frames.push_back(currentFrame);
 }
 
@@ -59,16 +60,13 @@ void Cello::customSave() {
 	for(int i=0; i<frames.size(); i++) {
 		writeGraphicControlExtension(2,0,1,0,0x00);
 		for(int j=0; j<frames[i].images.size(); j++) {
-			cout << "\t\tanalysing frame #" << i+1 << "/" << frames.size() << " and image #" << j+1 <<  "/" << frames[i].images.size() << endl;
 			Image *image=&(frames[i].images[j]);
 
 			writeImageDescriptor(image->left(),image->top(), image->width(), image->height(), image->interlace(), image->sort(), image->colourMap.size());
-			cout << "\t\timage colourmap size: " << image->colourMap.size() << endl;
 			writeColourTable(image->colourMap.size(), image->colourMap.colours);
 
 			IndexStream compressed=image->getCompressedData();
 			int dataSize=compressed.size();
-			cout << "\t\tdataSize=" << compressed.size() << endl;
 			
 			Byte data[dataSize];
 			for(int i=0; i<dataSize; i++) {
@@ -102,16 +100,16 @@ void Cello::standardSave() {
 		imageCount+=frames[i].images.size();
 	}
 
+	SavedImage savedImages[imageCount];
+
 	filetype->ImageCount=imageCount;
 	filetype->SWidth=getWidth();
 	filetype->SHeight=getHeight();
 	filetype->SColorMap=globalColourMap.toStandard();
-
-	SavedImage savedImages[imageCount];
-
+	filetype->SavedImages=savedImages;
+	
 	for(int i=0; i<frames.size(); i++) {
 		for(int j=0; j<frames[i].images.size(); j++) {
-			cout << "\t\tanalysing frame #" << i+1 << "/" << frames.size() << " and image #" << j+1 <<  "/" << frames[i].images.size() << endl;
 			Image *image=&(frames[i].images[j]);
 			savedImages[i].ImageDesc.Left=image->left();
 			savedImages[i].ImageDesc.Top=image->top();
@@ -120,15 +118,7 @@ void Cello::standardSave() {
 			savedImages[i].ImageDesc.Interlace=image->interlace();
 			savedImages[i].ImageDesc.ColorMap=image->colourMap.toStandard();
 			savedImages[i].RasterBits=image->getRawData();
-
-
-cout << "			savedImages[i].ImageDesc.Left=" << 			savedImages[i].ImageDesc.Left << endl;
-cout << "			savedImages[i].ImageDesc.Top=" << 			savedImages[i].ImageDesc.Top << endl;
-cout << "			savedImages[i].ImageDesc.Width=" << 			savedImages[i].ImageDesc.Width << endl;
-cout << "			savedImages[i].ImageDesc.Height=" << 			savedImages[i].ImageDesc.Height << endl;
-cout << "			savedImages[i].ImageDesc.Interlace=" << 			savedImages[i].ImageDesc.Interlace << endl;
-cout << "			savedImages[i].ImageDesc.ColorMap=" << 			savedImages[i].ImageDesc.ColorMap << endl;
-cout << "			savedImages[i].RasterBits=" << 			(long int) savedImages[i].RasterBits << endl;
+			cout << "cc=" << savedImages[i].ImageDesc.ColorMap->ColorCount<< endl;
 
 			if(i==0) {
 				ExtensionBlock blocks[2];
@@ -137,9 +127,9 @@ cout << "			savedImages[i].RasterBits=" << 			(long int) savedImages[i].RasterBi
 				blocks[0].ByteCount=15;
 				blocks[0].Bytes=animationBlockData;
 				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
-				blocks[0].ByteCount=4;
-				blocks[0].Bytes=graphicBlockData;
-				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
+				blocks[1].ByteCount=4;
+				blocks[1].Bytes=graphicBlockData;
+				blocks[1].Function=APPLICATION_EXT_FUNC_CODE;
 				savedImages[i].ExtensionBlockCount=2;
 				savedImages[i].ExtensionBlocks=blocks;
 			} else if(j==0) {
@@ -192,12 +182,13 @@ void Cello::writeColourTable(int size, Byte* table) {
 
 void Cello::writeImageDescriptor(int left, int top, int width, int height, int interlace, int sort, int tableSize) {
 	int table=(tableSize!=0);
+	int size=(tableSize>>1)-1;
 	gout << (Byte) 0x2c;
 	gout << (Byte) (left%256) << (Byte) (left/256);
 	gout << (Byte) (top%256) << (Byte) (top/256);
 	gout << (Byte) (width%256) << (Byte) (width/256);
 	gout << (Byte) (height%256) << (Byte) (height/256);
-	gout << (Byte) (128*table+64*interlace+32*sort+tableSize);
+	gout << (Byte) (128*table+64*interlace+32*sort+size);
 }
 
 void Cello::writeTableBasedImageData(Byte minLZWSize, Byte size, Byte* data) {

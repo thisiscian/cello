@@ -25,7 +25,9 @@ void Frame::initialise(int w, int h, int d) {
 			pixels[i*width+j].set(&pix[3*(i*width+j)]);
 		}
 	}	
+}
 
+void Frame::makeImages() {
 	for(int i=0, j=min(16,height); i<j; i++, j=min(16,height-j*16)) {
 		for(int k=0, l=min(16,width); k<l; k++, l=min(16,width-k*16)) {
 			images.push_back(Image(&(pix[3*(i*width+k)]), l, j, width));

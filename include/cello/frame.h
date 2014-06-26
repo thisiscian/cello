@@ -18,6 +18,7 @@
 			std::vector<Image> images;
 
 			void initialise(int w, int h, int d);
+			void makeImages();
 		private:	
 			int width, height;
 	};

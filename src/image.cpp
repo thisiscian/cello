@@ -35,18 +35,16 @@ ColourMap Image::makeColourMap(Byte* input, size_t width, size_t height, size_t 
 			colorMap.add( &(input[3*(i*frameWidth+j)]) );
 		}
 	}
-	cout << "mapSize=" << colorMap.size() << endl;
 	return colorMap;
 };
 
 IndexStream Image::makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap) {
 	IndexStream indexStream;
-	cout << "\t\tindexStream wxh=" << width << "x" << height << endl;
 	int value;
 	for(int i=0; i<height; i++) {
 		for(int j=0; j<width; j++) {
 			int k=colourMap.contains(&(data[3*(frameWidth*i+j)]));
-			if(k>=0) { indexStream.push_back(k); }
+			if(k>=0) { indexStream.push_back(k); }	
 		}
 	}
 
@@ -70,8 +68,7 @@ IndexStream Image::makeIndexStream(Byte* data, size_t width, size_t height, size
 			current=Code(1,indexStream[i]);
 		}
 	}
-	
-
+	output.push_back(codeMap[current]);
 	return output;
 }
 
@@ -100,7 +97,6 @@ Byte* Image::getRawData() {
 
 IndexStream Image::getCompressedData() {
 	IndexStream stream=makeIndexStream(data, width(), height(), frameWidth(), colourMap);
-	cout << "\t\tstreamSize=" << stream.size() << endl;
 	IndexStream output=compressIndexStream(minimumCodeSize(), stream);
 	return output;
 };
@@ -113,16 +109,16 @@ IndexStream Image::compressIndexStream(size_t minimumCodeSize, IndexStream strea
 	for(int i=0; i<stream.size(); i++) {
 		while(pow(2,indexSize)<=stream[i]) {indexSize++; }
 		for(int j=0; j<indexSize; j++) {
-			cout << (int) stream[i] << " ";
 			int bit=(stream[i]>>j) & 1;
-			code+=pow(2,bitMultiplier++)*bit; //bit<<bitMultiplier++;
+			code+=bit<<bitMultiplier++;
+			//code+=pow(2,bitMultiplier++)*bit; //bit<<bitMultiplier++;
 			if(bitMultiplier==8) {
 				bitMultiplier=0;
 				outStream.push_back(code);
-				cout << (int) code << endl;
 				code=0;
 			}
 		}
 	}
+	outStream.push_back(code);
 	return outStream;
 }

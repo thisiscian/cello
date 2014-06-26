@@ -71,8 +71,6 @@ ColorMapObject *ColourMap::toStandard() {
 	}
 
 	ColorMapObject *map=GifMakeMapObject(count, standardMap);
-	cout << "toStandard() size=" << count << ", address=" << map << endl;
-
 	return map;
 };
 
