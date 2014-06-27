@@ -38,40 +38,6 @@ ColourMap Image::makeColourMap(Byte* input, size_t width, size_t height, size_t 
 	return colorMap;
 };
 
-IndexStream Image::makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap) {
-	IndexStream indexStream;
-	int value;
-	for(int i=0; i<height; i++) {
-		for(int j=0; j<width; j++) {
-			int k=colourMap.contains(&(data[3*(frameWidth*i+j)]));
-			if(k>=0) { indexStream.push_back(k); }	
-		}
-	}
-
-	IndexStream output;
-	map<Code,Byte> codeMap;
-
-	for(int i=0; i<colourMap.size()+2; i++) {
-		codeMap[Code(1,i)]=i;
-	}
-
-	Byte freeValue=colourMap.size()+2;
-	Code current(1,indexStream[0]);
-	for(int i=1; i<indexStream.size(); i++) {
-		Code next=current;
-		next.push_back(indexStream[i]);
-		if(codeMap.count(next)!=0) {
-			current=next;
-		} else {
-			codeMap[current]=freeValue++;
-			output.push_back(codeMap[current]);
-			current=Code(1,indexStream[i]);
-		}
-	}
-	output.push_back(codeMap[current]);
-	return output;
-}
-
 void Image::left(size_t left) { _left=left; };
 void Image::top(size_t top) { _top=top; };
 void Image::width(size_t width) { _width=width; };
@@ -96,10 +62,49 @@ Byte* Image::getRawData() {
 }
 
 IndexStream Image::getCompressedData() {
-	IndexStream stream=makeIndexStream(data, width(), height(), frameWidth(), colourMap);
+	IndexStream stream=makeIndexStream(data, width(), height(), frameWidth(), colourMap);	
 	IndexStream output=compressIndexStream(minimumCodeSize(), stream);
 	return output;
 };
+
+IndexStream Image::makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap) {
+	IndexStream indexStream;
+	int value;
+	for(int i=0; i<height; i++) {
+		for(int j=0; j<width; j++) {
+			int k=colourMap.contains(&(data[3*(frameWidth*i+j)]));
+			if(k>=0) { indexStream.push_back(k); }	
+		}
+	}
+
+	IndexStream output;
+	map<Code,Byte> codeMap;
+
+	for(int i=0; i<colourMap.size(); i++) {
+		codeMap[Code(1,i)]=i;
+	}
+
+	Byte clearCode=pow(2,colourMap.size());
+	Byte exitCode=clearCode+1;
+	output.push_back(clearCode);
+
+	Byte freeValue=exitCode+1;
+	Code current(1,indexStream[0]);
+	for(int i=1; i<indexStream.size(); i++) {
+		Code next=current;
+		next.push_back(indexStream[i]);
+		if(codeMap.count(next)!=0) {
+			current=next;
+		} else {
+			codeMap[next]=freeValue++;
+			output.push_back(codeMap[current]);
+			current=Code(1,indexStream[i]);
+		}
+	}
+	output.push_back(codeMap[current]);
+	output.push_back(exitCode);
+	return output;
+}
 
 IndexStream Image::compressIndexStream(size_t minimumCodeSize, IndexStream stream) {
 	int indexSize=minimumCodeSize;
@@ -111,7 +116,6 @@ IndexStream Image::compressIndexStream(size_t minimumCodeSize, IndexStream strea
 		for(int j=0; j<indexSize; j++) {
 			int bit=(stream[i]>>j) & 1;
 			code+=bit<<bitMultiplier++;
-			//code+=pow(2,bitMultiplier++)*bit; //bit<<bitMultiplier++;
 			if(bitMultiplier==8) {
 				bitMultiplier=0;
 				outStream.push_back(code);
@@ -119,6 +123,8 @@ IndexStream Image::compressIndexStream(size_t minimumCodeSize, IndexStream strea
 			}
 		}
 	}
-	outStream.push_back(code);
+	if(code!=0) {
+		outStream.push_back(code);
+	}
 	return outStream;
 }

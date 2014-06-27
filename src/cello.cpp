@@ -1,4 +1,5 @@
 #include <cello/cello.h>
+#include<cmath>
 using std::string;
 using std::fstream;
 using std::cout;
@@ -67,12 +68,10 @@ void Cello::customSave() {
 
 			IndexStream compressed=image->getCompressedData();
 			int dataSize=compressed.size();
-			
 			Byte data[dataSize];
 			for(int i=0; i<dataSize; i++) {
 				data[i]=compressed[i];
 			}
-
 			writeTableBasedImageData(image->minimumCodeSize(), dataSize, data);
 		}
 	}
@@ -87,13 +86,14 @@ int standardWrite(GifFileType * ft, const GifByteType * data, int count) {
 
 
 void Cello::standardSave() {
-	gout.open(filename.c_str(), fstream::out | fstream::trunc);
-  gout.close(); 
-  gout.open(filename.c_str(), fstream::out | fstream::app);
+	fstream sout;
+	sout.open(filename.c_str(), fstream::out | fstream::trunc);
+  sout.close(); 
+  sout.open(filename.c_str(), fstream::out | fstream::app);
 	cout << "\tsaving: " << filename << endl;
 
 	int err=0;
-	GifFileType *filetype=EGifOpen(&gout, &standardWrite, &err);
+	GifFileType *filetype=EGifOpen(&sout, &standardWrite, &err);
 
 	int imageCount=0;
 	for(int i=0; i<frames.size(); i++) {
@@ -103,10 +103,10 @@ void Cello::standardSave() {
 	SavedImage savedImages[imageCount];
 
 	filetype->ImageCount=imageCount;
+	filetype->SavedImages=savedImages;
 	filetype->SWidth=getWidth();
 	filetype->SHeight=getHeight();
 	filetype->SColorMap=globalColourMap.toStandard();
-	filetype->SavedImages=savedImages;
 	
 	for(int i=0; i<frames.size(); i++) {
 		for(int j=0; j<frames[i].images.size(); j++) {
@@ -118,26 +118,24 @@ void Cello::standardSave() {
 			savedImages[i].ImageDesc.Interlace=image->interlace();
 			savedImages[i].ImageDesc.ColorMap=image->colourMap.toStandard();
 			savedImages[i].RasterBits=image->getRawData();
-			cout << "cc=" << savedImages[i].ImageDesc.ColorMap->ColorCount<< endl;
-
 			if(i==0) {
 				ExtensionBlock blocks[2];
 				GifByteType animationBlockData[15]={0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,0x03,0x01,0xff,0xff};
-				GifByteType graphicBlockData[15]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
+				GifByteType graphicBlockData[4]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
 				blocks[0].ByteCount=15;
 				blocks[0].Bytes=animationBlockData;
 				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
 				blocks[1].ByteCount=4;
 				blocks[1].Bytes=graphicBlockData;
-				blocks[1].Function=APPLICATION_EXT_FUNC_CODE;
+				blocks[1].Function=GRAPHICS_EXT_FUNC_CODE;
 				savedImages[i].ExtensionBlockCount=2;
 				savedImages[i].ExtensionBlocks=blocks;
 			} else if(j==0) {
 				ExtensionBlock block;
-				GifByteType graphicBlockData[15]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
+				GifByteType graphicBlockData[4]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
 				block.ByteCount=4;
 				block.Bytes=graphicBlockData;
-				block.Function=APPLICATION_EXT_FUNC_CODE;
+				block.Function=GRAPHICS_EXT_FUNC_CODE;
 				savedImages[i].ExtensionBlockCount=1;
 				savedImages[i].ExtensionBlocks=&block;
 			} else {
@@ -148,7 +146,7 @@ void Cello::standardSave() {
 	}
 
 	EGifSpew(filetype);
-	gout.close();
+	sout.close();
 }
 
 
