@@ -52,7 +52,7 @@
 			void writeColourTable(int size, Byte* table);
 			void writeImageDescriptor(int left, int top, int width, int height, int interlace, int sort, int tableSize);
 			void writeTableBasedImageData(Byte minLZWSize, Byte size, Byte* data);
-			void writeApplicationExtension(Byte label, Byte size, std::string identifier, std::string auth);
+			void writeApplicationExtension(Byte size, Byte *data);
 			void writeGraphicControlExtension(int disposal, int ui, int transparent, int delay, Byte transparentColour);
 			void writeTrailer();
 	};

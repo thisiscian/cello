@@ -51,15 +51,23 @@ void Cello::customSave() {
 	cout << "\tsaving: " << filename << endl;
 
 	writeHeader("89a");
-	writeLogicalScreenDescriptor(width,height,8,0,0,globalColourMap.size(),0);	
+	int resolution=1;
+	int sort=0;
+	int tableSize=globalColourMap.size();
+	Byte backgroundColour=0;
+	Byte pixelAspectRatio=0;
+	writeLogicalScreenDescriptor(width,height,resolution,sort,tableSize,backgroundColour,pixelAspectRatio);	
 	writeColourTable(globalColourMap.size(),globalColourMap.colours);
-	writeApplicationExtension(0xFF, 11, "NETSCAPE", "2.0");
-		Byte loopControl[3]={0x01,0xFF,0xFF};
-		writeDataSubBlock(3,loopControl);
+	
+	Byte animationBlockData[15]={0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,0x03,0x01,0xff,0xff};
+	writeApplicationExtension(15, animationBlockData);
+
+//		Byte loopControl[3]={0x01,0xFF,0xFF};
+//		writeDataSubBlock(3,loopControl);
 	writeBlockTerminator();
 
 	for(int i=0; i<frames.size(); i++) {
-		writeGraphicControlExtension(2,0,1,0,0x00);
+		writeGraphicControlExtension(1,0,0,(int) frames[i].delay,0x00);
 		for(int j=0; j<frames[i].images.size(); j++) {
 			Image *image=&(frames[i].images[j]);
 
@@ -105,7 +113,8 @@ void Cello::standardSave() {
 	filetype->ImageCount=imageCount;
 	filetype->SavedImages=savedImages;
 	filetype->SWidth=getWidth();
-	filetype->SHeight=getHeight();
+	filetype->SHeight=getHeight();	
+	filetype->SColorResolution=1;
 	filetype->SColorMap=globalColourMap.toStandard();
 	
 	for(int i=0; i<frames.size(); i++) {
@@ -121,13 +130,17 @@ void Cello::standardSave() {
 			if(i==0) {
 				ExtensionBlock blocks[2];
 				GifByteType animationBlockData[15]={0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,0x03,0x01,0xff,0xff};
-				GifByteType graphicBlockData[4]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
 				blocks[0].ByteCount=15;
 				blocks[0].Bytes=animationBlockData;
 				blocks[0].Function=APPLICATION_EXT_FUNC_CODE;
+				cout << APPLICATION_EXT_FUNC_CODE << endl;
+
+				GifByteType graphicBlockData[4]={4, ((int) frames[i].delay)%256, ((int) frames[i].delay)/256, 0};
 				blocks[1].ByteCount=4;
 				blocks[1].Bytes=graphicBlockData;
 				blocks[1].Function=GRAPHICS_EXT_FUNC_CODE;
+				cout << GRAPHICS_EXT_FUNC_CODE << endl;
+
 				savedImages[i].ExtensionBlockCount=2;
 				savedImages[i].ExtensionBlocks=blocks;
 			} else if(j==0) {
@@ -145,7 +158,10 @@ void Cello::standardSave() {
 		}
 	}
 
-	EGifSpew(filetype);
+
+	err=EGifSpew(filetype);
+	cout << "EGifSpew: " << err << endl;
+
 	sout.close();
 }
 
@@ -166,10 +182,13 @@ void Cello::writeHeader(string version) {
 }
 
 void Cello::writeLogicalScreenDescriptor(int width, int height, int resolution, int sort, int tableSize, Byte backgroundColour, Byte pixelAspectRatio) {
-	int table=(tableSize!=0);	
+	int table=tableSize?1:0;
+	tableSize=tableSize?tableSize:8;
+
 	gout << (Byte) (width%256) << (Byte) (width/256);
 	gout << (Byte) (height%256) << (Byte) (height/256);
 	gout << (Byte) (128*table+(resolution-1)*16+sort*8+(tableSize-1));
+	cout << "output: " << 128*table << "+" << (resolution-1)*16 << "+" << sort*8 << "+" << (tableSize-1) << endl;
 	gout << backgroundColour << pixelAspectRatio;
 }
 
@@ -205,10 +224,9 @@ void Cello::writeGraphicControlExtension(int disposal, int ui, int transparent, 
 	writeBlockTerminator();
 }
 
-void Cello::writeApplicationExtension(Byte label, Byte size, string identifier, string auth) {
-	gout << (Byte) 0x21 << label << size;
-	gout << identifier.substr(0,8);
-	gout << auth.substr(0,3);
+void Cello::writeApplicationExtension(Byte size, Byte *data) {
+	gout << (Byte) 0x21 << (Byte) 0xFF << size;
+	gout.write((char *)data, (int) size);
 }
 
 void Cello::writeTrailer() {

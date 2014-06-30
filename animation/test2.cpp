@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
 	int w=10, h=10;
 
 	Cello cello;
-	cello.mode=CUSTOM;
+	cello.mode=BOTH;
 	cello.start("test2.gif",w,h);
 
 	for(int i=0; i<3; i++) {

@@ -61,7 +61,7 @@ int ColourMap::contains(Byte r, Byte g, Byte b) {
 }
 
 ColorMapObject *ColourMap::toStandard() {
-	if(size()==0) { return NULL; }
+	if(size()==0) { return GifMakeMapObject(0, NULL); }
 	int count=(int) pow(2,(int) ceil(log(size())/log(2)));
 	GifColorType standardMap[count];
 	for(int i=0; i<size(); i++) {
