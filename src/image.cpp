@@ -1,5 +1,6 @@
 #include <cello/image.h>
 #include <iostream>
+#include <iomanip>
 using std::cout;
 using std::endl;
 using std::map;
@@ -14,29 +15,17 @@ Image::Image(Byte* input, size_t w, size_t h, size_t f) {
 	sort(false);
 	data=input;
 
-	colourMap=makeColourMap(input, width(), height(), frameWidth());
-	minimumCodeSize((size_t) std::max(2.0,ceil(log(colourMap.size())/log(2))));
-
-	_rawData=new Byte[3*width()*height()];
+	_indexData=new Byte[_height*_width];
 	for(int i=0; i<height(); i++) {
 		for(int j=0; j<width(); j++) {
-			_rawData[3*(i*width()+j)+0]=data[3*(i*frameWidth()+j)+0];
-			_rawData[3*(i*width()+j)+1]=data[3*(i*frameWidth()+j)+1];
-			_rawData[3*(i*width()+j)+2]=data[3*(i*frameWidth()+j)+2];
+			int k=colourMap.add( &(input[3*(i*frameWidth()+j)]) );
+			if(k>=0) { _indexData[i*width()+j]=k; }	
+			else { cout << "ERROR::" << endl; }
 		}
 	}
 
+	_minimumCodeSize=(Byte) pow(2,ceil(log(colourMap.size())/log(2)));
 }
-
-ColourMap Image::makeColourMap(Byte* input, size_t width, size_t height, size_t frameWidth) {
-	ColourMap colorMap;
-	for(int i=0; i<height; i++) {
-		for(int j=0; j<width; j++) {
-			colorMap.add( &(input[3*(i*frameWidth+j)]) );
-		}
-	}
-	return colorMap;
-};
 
 void Image::left(size_t left) { _left=left; };
 void Image::top(size_t top) { _top=top; };
@@ -57,74 +46,62 @@ bool Image::interlace() { return _sort; }
 bool Image::sort() { return _sort; }
 size_t Image::table() { return (colourMap.size()!=0); }
 
-Byte* Image::getRawData() { 
-	return _rawData;
+Byte* Image::getIndexData() {
+	return _indexData;
 }
 
-IndexStream Image::getCompressedData() {
-	IndexStream stream=makeIndexStream(data, width(), height(), frameWidth(), colourMap);	
-	IndexStream output=compressIndexStream(minimumCodeSize(), stream);
-	return output;
-};
-
-IndexStream Image::makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap) {
-	IndexStream indexStream;
-	int value;
-	for(int i=0; i<height; i++) {
-		for(int j=0; j<width; j++) {
-			int k=colourMap.contains(&(data[3*(frameWidth*i+j)]));
-			if(k>=0) { indexStream.push_back(k); }	
-		}
-	}
-
-	IndexStream output;
+LZWStream Image::getCompressedData() {
+	LZWStream output;
 	map<Code,Byte> codeMap;
+	Byte *indexStream=getIndexData();
+	int indexSize=minimumCodeSize();
+	Byte code=0;
+	int bitMultiplier=0;
 
+	// populate the codemap with all colours, and the clear & exit codes
 	for(int i=0; i<colourMap.size(); i++) {
 		codeMap[Code(1,i)]=i;
 	}
-
 	Byte clearCode=pow(2,colourMap.size());
 	Byte exitCode=clearCode+1;
-	output.push_back(clearCode);
-
 	Byte freeValue=exitCode+1;
 	Code current(1,indexStream[0]);
-	for(int i=1; i<indexStream.size(); i++) {
+
+	compressCode(output, clearCode, code, indexSize, bitMultiplier);
+	for(int i=1; i<width()*height(); i++) {
 		Code next=current;
 		next.push_back(indexStream[i]);
 		if(codeMap.count(next)!=0) {
 			current=next;
 		} else {
+			compressCode(output, codeMap[current], code, indexSize, bitMultiplier);
 			codeMap[next]=freeValue++;
-			output.push_back(codeMap[current]);
 			current=Code(1,indexStream[i]);
 		}
 	}
-	output.push_back(codeMap[current]);
-	output.push_back(exitCode);
+	compressCode(output, codeMap[current], code, indexSize, bitMultiplier);
+	compressCode(output, exitCode, code, indexSize, bitMultiplier);
+	
+	if(code!=0) {
+		compressCode(output, code, code, indexSize, bitMultiplier);
+	}
+
 	return output;
 }
 
-IndexStream Image::compressIndexStream(size_t minimumCodeSize, IndexStream stream) {
-	int indexSize=minimumCodeSize;
-	IndexStream outStream;
-	Byte code=0;
-	Byte bitMultiplier=0;
-	for(int i=0; i<stream.size(); i++) {
-		while(pow(2,indexSize)<=stream[i]) {indexSize++; }
-		for(int j=0; j<indexSize; j++) {
-			int bit=(stream[i]>>j) & 1;
-			code+=bit<<bitMultiplier++;
-			if(bitMultiplier==8) {
-				bitMultiplier=0;
-				outStream.push_back(code);
-				code=0;
-			}
+void Image::compressCode(LZWStream &output, Byte input, Byte &code, int &indexSize, int &bitMultiplier) {
+	while(pow(2,indexSize)<=input) {indexSize++;}
+	for(int j=0; j<indexSize; j++) {
+		int bit=(input>>j) & 1;
+		cout << bit;
+		code+=bit<<bitMultiplier++;
+		if(bitMultiplier==8) {
+			cout << endl;
+			bitMultiplier=0;
+			output.push_back(code);
+			cout << std::hex << "code->0x" << (int) code << std::dec << "(" << indexSize << ")" << endl;
+			code=0;
 		}
 	}
-	if(code!=0) {
-		outStream.push_back(code);
-	}
-	return outStream;
+//	cout << "input->" << std::hex <<  (int) input << std::dec << "(" << (int) code << "," << bitMultiplier << ")[" << indexSize << "]" << endl;
 }

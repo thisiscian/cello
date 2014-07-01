@@ -11,19 +11,7 @@ ColourMap::ColourMap() {
 	initialise();	
 }
 
-void ColourMap::add(Byte r, Byte g, Byte b) {
-	Byte pixel[3]={r,g,b};
-	int prevSize=unique.size();
-	unique.insert(Pixel(pixel));
-	if(prevSize!=unique.size()) {
-		colours[3*_size]=r;
-		colours[3*_size+1]=g;
-		colours[3*_size+2]=b;
-		_size=(_size+1)%256;
-	}
-};
-
-void ColourMap::add(Byte* p) { 
+int ColourMap::add(Byte* p) { 
 	int prevSize=unique.size();
 	unique.insert(Pixel(p));
 	if(prevSize!=unique.size()) {
@@ -31,7 +19,9 @@ void ColourMap::add(Byte* p) {
 		colours[3*_size+1]=p[1];
 		colours[3*_size+2]=p[2];
 		_size=(_size+1)%256;
-	}
+	} 
+	int output=contains(p);
+	return contains(p);
 };
 
 size_t ColourMap::size() {
@@ -42,20 +32,9 @@ size_t ColourMap::size() {
 int ColourMap::contains(Byte *p) {
 	set<Pixel>::iterator px=unique.find(Pixel(p));
 	int index=0;
-	for(set<Pixel>::iterator it=unique.begin(); it!=unique.end(); ++it) {
-		if(px==it) { return index; }
-		index++;
-	}
-	return -1;
-	return (unique.count(Pixel(p))!=0); //contains(p[0], p[1], p[2]);
-}
 
-int ColourMap::contains(Byte r, Byte g, Byte b) {
-	for(int i=0; i<size(); i++) {
-		Byte R=colours[3*i+0];
-		Byte G=colours[3*i+1];
-		Byte B=colours[3*i+2];
-		if(r==R && g==G && b==B) { return i; }
+	for(int i=0; i<_size; i++) {
+		if(Pixel(&(colours[3*i])) == Pixel(p)) { return i; }
 	}
 	return -1;
 }

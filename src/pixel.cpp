@@ -29,7 +29,10 @@ bool Pixel::operator<(const Pixel& P) const {
 }
 
 bool Pixel::operator==(const Pixel& P) const {
-	return sum()==P.sum();
+	if(p[0]!=P[0]) { return false; }
+	if(p[1]!=P[1]) { return false; }
+	if(p[2]!=P[2]) { return false; }
+	return true; 
 }
 
 void Pixel::set(char* P) {
@@ -47,7 +50,7 @@ void Pixel::colour(const Pixel &P) {
 }
 
 void Pixel::colour(unsigned char r, unsigned char g, unsigned char b) {
-	*p=r;
-	*(p+1)=g;
-	*(p+2)=b;
+	p[0]=r;
+	p[1]=g;
+	p[2]=b;
 }

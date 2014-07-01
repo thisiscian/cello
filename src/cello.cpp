@@ -74,7 +74,7 @@ void Cello::customSave() {
 			writeImageDescriptor(image->left(),image->top(), image->width(), image->height(), image->interlace(), image->sort(), image->colourMap.size());
 			writeColourTable(image->colourMap.size(), image->colourMap.colours);
 
-			IndexStream compressed=image->getCompressedData();
+			LZWStream compressed=image->getCompressedData();
 			int dataSize=compressed.size();
 			Byte data[dataSize];
 			for(int i=0; i<dataSize; i++) {
@@ -126,7 +126,8 @@ void Cello::standardSave() {
 			savedImages[i].ImageDesc.Height=image->height();
 			savedImages[i].ImageDesc.Interlace=image->interlace();
 			savedImages[i].ImageDesc.ColorMap=image->colourMap.toStandard();
-			savedImages[i].RasterBits=image->getRawData();
+			savedImages[i].RasterBits=image->getIndexData();
+
 			if(i==0) {
 				ExtensionBlock blocks[2];
 				GifByteType animationBlockData[15]={0x4e,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2e,0x30,0x03,0x01,0xff,0xff};
@@ -160,7 +161,6 @@ void Cello::standardSave() {
 
 
 	err=EGifSpew(filetype);
-	cout << "EGifSpew: " << err << endl;
 
 	sout.close();
 }
@@ -188,7 +188,6 @@ void Cello::writeLogicalScreenDescriptor(int width, int height, int resolution, 
 	gout << (Byte) (width%256) << (Byte) (width/256);
 	gout << (Byte) (height%256) << (Byte) (height/256);
 	gout << (Byte) (128*table+(resolution-1)*16+sort*8+(tableSize-1));
-	cout << "output: " << 128*table << "+" << (resolution-1)*16 << "+" << sort*8 << "+" << (tableSize-1) << endl;
 	gout << backgroundColour << pixelAspectRatio;
 }
 

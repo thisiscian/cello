@@ -10,25 +10,13 @@ int main(int argc, char* argv[]) {
 	cello.mode=BOTH;
 	cello.start("test2.gif",w,h);
 
-	for(int i=0; i<3; i++) {
-		for(int j=0; j<5; j++) {
-			cello.currentFrame.pixels[i*w+j].colour(255,0,0);
-			cello.currentFrame.pixels[i*w+j+5].colour(0,0,255);
-		}
-	}
-	for(int i=3; i<7; i++) {
-		for(int j=0; j<3; j++) {
-			cello.currentFrame.pixels[i*w+j].colour(255,0,0);
-			cello.currentFrame.pixels[i*w+j+7].colour(0,0,255);
-		}
-		for(int j=0; j<4; j++) {
-			cello.currentFrame.pixels[i*w+j+3].colour(255,255,255);
-		}
-	}
-	for(int i=7; i<10; i++) {
-		for(int j=0; j<5; j++) {
-			cello.currentFrame.pixels[i*w+j].colour(255,0,0);
-			cello.currentFrame.pixels[i*w+j+5].colour(0,0,255);
+	for(int i=0; i<h; i++) {
+		for(int j=0; j<w; j++) {
+			if( (i+j) % 2 == 0) {
+				cello.currentFrame.pixels[i*w+j].colour(255,255,255);
+			} else {
+				cello.currentFrame.pixels[i*w+j].colour(0,0,0);
+			}
 		}
 	}
 

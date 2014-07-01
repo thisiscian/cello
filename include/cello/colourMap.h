@@ -11,11 +11,9 @@
 		public:
 			ColourMap();
 
-			void add(Byte r, Byte g, Byte b);
-			void add(Byte *p);
+			int add(Byte *p);
 			
 			int contains(Byte *p);
-			int contains(Byte r, Byte g, Byte b);
 
 			ColorMapObject *toStandard();
 			size_t size();

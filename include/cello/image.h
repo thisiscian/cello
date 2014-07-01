@@ -7,7 +7,7 @@
 	#include <cello/colourMap.h>
 
 	typedef unsigned char Byte;
-	typedef std::vector<Byte> IndexStream;
+	typedef std::vector<Byte> LZWStream;
 	typedef std::vector<int> Code;
 	typedef std::vector<Code> codeStream;
 	class Image {
@@ -29,17 +29,14 @@
 			size_t table();
 			size_t minimumCodeSize();
 
-			Byte* getRawData();
-			IndexStream getCompressedData();
+			Byte* getIndexData();
+			LZWStream getCompressedData();
 
 		private:
 			size_t _left, _top, _width, _height, _minimumCodeSize, _frameWidth;
 			bool _interlace, _sort;
-			Byte *data, *_rawData;
-			IndexStream _indexStream;
-
-			ColourMap makeColourMap(Byte* data, size_t width, size_t height, size_t frameWidth);
-			IndexStream makeIndexStream(Byte* data, size_t width, size_t height, size_t frameWidth, ColourMap colourMap);
+			Byte *data, *_indexData;
+			LZWStream _indexStream;
 
 			void left(size_t left);
 			void top(size_t top);
@@ -50,7 +47,7 @@
 			void sort(bool sort);
 			void minimumCodeSize(size_t minimumCodeSize);
 
-			IndexStream compressIndexStream(size_t minimumCodeSize, IndexStream stream);
+			void compressCode(LZWStream &output, Byte input, Byte &code, int &indexSize, int &bitMultiplier);
 	};
 
 #endif
